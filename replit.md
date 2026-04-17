@@ -2,9 +2,32 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript. Each package manages its own dependencies.
+pnpm workspace monorepo using TypeScript, plus a Python/Flask web app (RecipeBend).
 
-## Stack
+## RecipeBend (Python/Flask)
+
+**Location:** `artifacts/recipebend/`
+
+**Stack:** Python 3.11, Flask, recipe-scrapers, requests, Alpine.js (CDN)
+
+**Run command:** `cd artifacts/recipebend && python app.py`
+
+**Workflow:** "Start application" — serves on port 5000
+
+### Routes
+- `GET /` — serves the HTML frontend
+- `POST /extract` — accepts `{ url }`, returns `{ title, servings, total_time, ingredients[], steps[], source_url }`
+
+### Phase 1 (complete)
+- URL input + Extract button frontend (Alpine.js reactive)
+- `/extract` endpoint using `recipe_scrapers.scrape_html` with `wild_mode=True`
+- Graceful error handling with JSON error responses
+
+### Phase 2 (planned)
+- Recipe modification using Claude AI
+- Comment placeholder exists in `templates/index.html`
+
+## TypeScript Monorepo
 
 - **Monorepo tool**: pnpm workspaces
 - **Node.js version**: 24

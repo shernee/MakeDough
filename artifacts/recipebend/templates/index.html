@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RecipeBend</title>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div x-data="recipeApp()" style="max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: sans-serif;">
+
+    <h1>RecipeBend</h1>
+    <p>Paste a recipe URL below to extract the recipe details.</p>
+
+    <form @submit.prevent="extractRecipe" style="display: flex; gap: 8px; margin-bottom: 24px;">
+      <input
+        type="url"
+        x-model="url"
+        placeholder="https://www.example.com/recipe/..."
+        required
+        style="flex: 1; padding: 8px; font-size: 1rem;"
+      />
+      <button type="submit" :disabled="loading" style="padding: 8px 16px; font-size: 1rem; cursor: pointer;">
+        <span x-show="!loading">Extract</span>
+        <span x-show="loading">Extracting...</span>
+      </button>
+    </form>
+
+    <div x-show="error" style="color: red; margin-bottom: 16px;">
+      <strong>Error:</strong> <span x-text="error"></span>
+    </div>
+
+    <div x-show="recipe !== null">
+      <hr />
+
+      <h2 x-text="recipe.title || 'Untitled Recipe'"></h2>
+
+      <p x-show="recipe.servings">
+        <strong>Servings:</strong> <span x-text="recipe.servings"></span>
+      </p>
+
+      <p x-show="recipe.total_time">
+        <strong>Total Time:</strong> <span x-text="recipe.total_time + ' minutes'"></span>
+      </p>
+
+      <p>
+        <strong>Source:</strong>
+        <a :href="recipe.source_url" target="_blank" x-text="recipe.source_url"></a>
+      </p>
+
+      <h3>Ingredients</h3>
+      <template x-if="recipe.ingredients && recipe.ingredients.length > 0">
+        <ul>
+          <template x-for="ingredient in recipe.ingredients" :key="ingredient">
+            <li x-text="ingredient"></li>
+          </template>
+        </ul>
+      </template>
+      <p x-show="!recipe.ingredients || recipe.ingredients.length === 0">No ingredients found.</p>
+
+      <h3>Steps</h3>
+      <template x-if="recipe.steps && recipe.steps.length > 0">
+        <ol>
+          <template x-for="(step, index) in recipe.steps" :key="index">
+            <li x-text="step" style="margin-bottom: 8px;"></li>
+          </template>
+        </ol>
+      </template>
+      <p x-show="!recipe.steps || recipe.steps.length === 0">No steps found.</p>
+
+      <!-- ============================================================
+           PHASE 2: Recipe Modification (Claude integration) goes here.
+           This section will contain:
+           - A text prompt input for modification instructions
+           - A "Modify Recipe" button that POSTs to /modify
+           - Display of the Claude-modified recipe replacing or alongside the original
+           ============================================================ -->
+    </div>
+
+  </div>
+
+  <script>
+    function recipeApp() {
+      return {
+        url: '',
+        recipe: null,
+        loading: false,
+        error: null,
+
+        async extractRecipe() {
+          this.error = null;
+          this.recipe = null;
+          this.loading = true;
+
+          try {
+            const response = await fetch('/extract', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ url: this.url }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              this.error = data.error || 'An unexpected error occurred.';
+            } else {
+              this.recipe = data;
+            }
+          } catch (err) {
+            this.error = 'Network error: could not reach the server.';
+          } finally {
+            this.loading = false;
+          }
+        },
+      };
+    }
+  </script>
+</body>
+</html>
