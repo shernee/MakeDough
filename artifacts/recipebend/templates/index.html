@@ -30,52 +30,54 @@
       <strong>Error:</strong> <span x-text="error"></span>
     </div>
 
-    <div x-show="recipe !== null">
-      <hr />
+    <template x-if="recipe !== null">
+      <div>
+        <hr />
 
-      <h2 x-text="recipe.title || 'Untitled Recipe'"></h2>
+        <h2 x-text="recipe.title || 'Untitled Recipe'"></h2>
 
-      <p x-show="recipe.servings">
-        <strong>Servings:</strong> <span x-text="recipe.servings"></span>
-      </p>
+        <p x-show="recipe.servings">
+          <strong>Servings:</strong> <span x-text="recipe.servings"></span>
+        </p>
 
-      <p x-show="recipe.total_time">
-        <strong>Total Time:</strong> <span x-text="recipe.total_time + ' minutes'"></span>
-      </p>
+        <p x-show="recipe.total_time">
+          <strong>Total Time:</strong> <span x-text="recipe.total_time + ' minutes'"></span>
+        </p>
 
-      <p>
-        <strong>Source:</strong>
-        <a :href="recipe.source_url" target="_blank" x-text="recipe.source_url"></a>
-      </p>
+        <p>
+          <strong>Source:</strong>
+          <a :href="recipe.source_url" target="_blank" x-text="recipe.source_url"></a>
+        </p>
 
-      <h3>Ingredients</h3>
-      <template x-if="recipe.ingredients && recipe.ingredients.length > 0">
-        <ul>
-          <template x-for="ingredient in recipe.ingredients" :key="ingredient">
-            <li x-text="ingredient"></li>
-          </template>
-        </ul>
-      </template>
-      <p x-show="!recipe.ingredients || recipe.ingredients.length === 0">No ingredients found.</p>
+        <h3>Ingredients</h3>
+        <template x-if="recipe.ingredients && recipe.ingredients.length > 0">
+          <ul>
+            <template x-for="ingredient in recipe.ingredients" :key="ingredient">
+              <li x-text="ingredient"></li>
+            </template>
+          </ul>
+        </template>
+        <p x-show="!recipe.ingredients || recipe.ingredients.length === 0">No ingredients found.</p>
 
-      <h3>Steps</h3>
-      <template x-if="recipe.steps && recipe.steps.length > 0">
-        <ol>
-          <template x-for="(step, index) in recipe.steps" :key="index">
-            <li x-text="step" style="margin-bottom: 8px;"></li>
-          </template>
-        </ol>
-      </template>
-      <p x-show="!recipe.steps || recipe.steps.length === 0">No steps found.</p>
+        <h3>Steps</h3>
+        <template x-if="recipe.steps && recipe.steps.length > 0">
+          <ol>
+            <template x-for="(step, index) in recipe.steps" :key="index">
+              <li x-text="step" style="margin-bottom: 8px;"></li>
+            </template>
+          </ol>
+        </template>
+        <p x-show="!recipe.steps || recipe.steps.length === 0">No steps found.</p>
 
-      <!-- ============================================================
-           PHASE 2: Recipe Modification (Claude integration) goes here.
-           This section will contain:
-           - A text prompt input for modification instructions
-           - A "Modify Recipe" button that POSTs to /modify
-           - Display of the Claude-modified recipe replacing or alongside the original
-           ============================================================ -->
-    </div>
+        <!-- ============================================================
+             PHASE 2: Recipe Modification (Claude integration) goes here.
+             This section will contain:
+             - A text prompt input for modification instructions
+             - A "Modify Recipe" button that POSTs to /modify
+             - Display of the Claude-modified recipe replacing or alongside the original
+             ============================================================ -->
+      </div>
+    </template>
 
   </div>
 
