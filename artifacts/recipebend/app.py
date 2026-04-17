@@ -96,6 +96,7 @@ def modify():
 
     recipe = data["recipe"]
     user_request = data["request"].strip()
+    history = data.get("history", [])  # list of {request, changes_summary}
     if not user_request:
         return jsonify({"error": "Modification request cannot be empty"}), 400
 
@@ -108,9 +109,19 @@ def modify():
         api_key=api_key,
     )
 
+    # Build context block from prior rounds so the model knows the modification history
+    history_context = ""
+    if history:
+        lines = ["Prior modifications already applied to this recipe:"]
+        for i, h in enumerate(history, 1):
+            lines.append(f"  {i}. \"{h.get('request', '')}\" → {h.get('changes_summary', '')}")
+        history_context = "\n" + "\n".join(lines) + "\n"
+
     user_message = (
-        f"Recipe:\n{json.dumps(recipe, indent=2)}\n\n"
-        f"Modification request: {user_request}"
+        f"Current recipe (already reflects any prior modifications):\n"
+        f"{json.dumps(recipe, indent=2)}\n"
+        f"{history_context}\n"
+        f"New modification request: {user_request}"
     )
 
     try:
