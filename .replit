@@ -29,7 +29,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "fuser -k 5000/tcp 2>/dev/null; cd artifacts/makedough && python app.py"
+args = "fuser -k 5000/tcp 2>/dev/null; cd artifacts/recipebend && python app.py"
 waitForPort = 5000
 
 [agent]
