@@ -49,15 +49,44 @@
           <a :href="recipe.source_url" target="_blank" x-text="recipe.source_url"></a>
         </p>
 
-        <h3>Ingredients</h3>
-        <template x-if="recipe.ingredients && recipe.ingredients.length > 0">
-          <ul>
-            <template x-for="ingredient in recipe.ingredients" :key="ingredient">
-              <li x-text="ingredient"></li>
+        <!-- Ingredients: side-by-side if modified, single column otherwise -->
+        <template x-if="modified === null">
+          <div>
+            <h3>Ingredients</h3>
+            <template x-if="recipe.ingredients && recipe.ingredients.length > 0">
+              <ul>
+                <template x-for="ingredient in recipe.ingredients" :key="ingredient">
+                  <li x-text="ingredient"></li>
+                </template>
+              </ul>
             </template>
-          </ul>
+            <p x-show="!recipe.ingredients || recipe.ingredients.length === 0">No ingredients found.</p>
+          </div>
         </template>
-        <p x-show="!recipe.ingredients || recipe.ingredients.length === 0">No ingredients found.</p>
+
+        <template x-if="modified !== null">
+          <div>
+            <h3>Ingredients</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+              <div>
+                <h4 style="margin-top: 0; color: #555;">Original</h4>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <template x-for="ingredient in recipe.ingredients" :key="ingredient">
+                    <li x-text="ingredient" style="margin-bottom: 4px; color: #777;"></li>
+                  </template>
+                </ul>
+              </div>
+              <div>
+                <h4 style="margin-top: 0; color: #2a7a2a;">Modified</h4>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <template x-for="ingredient in modified.ingredients" :key="ingredient">
+                    <li x-text="ingredient" style="margin-bottom: 4px;"></li>
+                  </template>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </template>
 
         <h3>Steps</h3>
         <template x-if="recipe.steps && recipe.steps.length > 0">
@@ -69,13 +98,57 @@
         </template>
         <p x-show="!recipe.steps || recipe.steps.length === 0">No steps found.</p>
 
-        <!-- ============================================================
-             PHASE 2: Recipe Modification (Claude integration) goes here.
-             This section will contain:
-             - A text prompt input for modification instructions
-             - A "Modify Recipe" button that POSTs to /modify
-             - Display of the Claude-modified recipe replacing or alongside the original
-             ============================================================ -->
+        <!-- PHASE 2: Recipe Modification -->
+        <hr style="margin: 32px 0 24px;" />
+        <h3 style="margin-top: 0;">Modify this Recipe</h3>
+        <p style="margin-top: 0; color: #555; font-size: 0.9rem;">
+          Describe the change you want — e.g. "double the recipe", "make it dairy-free", "reduce sugar by 25%".
+        </p>
+
+        <form @submit.prevent="modifyRecipe" style="margin-bottom: 16px;">
+          <textarea
+            x-model="modifyRequest"
+            placeholder="e.g. Make this recipe gluten-free..."
+            rows="3"
+            :disabled="modifying"
+            style="width: 100%; padding: 8px; font-size: 1rem; box-sizing: border-box; resize: vertical;"
+          ></textarea>
+          <button
+            type="submit"
+            :disabled="modifying || !modifyRequest.trim()"
+            style="margin-top: 8px; padding: 8px 16px; font-size: 1rem; cursor: pointer;"
+          >
+            <span x-show="!modifying">Modify Recipe</span>
+            <span x-show="modifying">Modifying...</span>
+          </button>
+        </form>
+
+        <div x-show="modifyError" style="color: red; margin-bottom: 16px;">
+          <strong>Error:</strong> <span x-text="modifyError"></span>
+        </div>
+
+        <template x-if="modified !== null">
+          <div>
+            <!-- Changes summary -->
+            <div style="background: #f0f7ff; border-left: 4px solid #3a7bd5; padding: 12px 16px; margin-bottom: 16px; border-radius: 0 4px 4px 0;">
+              <strong style="display: block; margin-bottom: 4px;">What changed</strong>
+              <span x-text="modified.changes_summary" style="font-size: 0.95rem;"></span>
+            </div>
+
+            <!-- Flags -->
+            <template x-if="modified.flags && modified.flags.length > 0">
+              <div style="background: #fff8e6; border-left: 4px solid #e6a817; padding: 12px 16px; margin-bottom: 16px; border-radius: 0 4px 4px 0;">
+                <strong style="display: block; margin-bottom: 8px;">Heads up</strong>
+                <ul style="margin: 0; padding-left: 20px;">
+                  <template x-for="flag in modified.flags" :key="flag">
+                    <li x-text="flag" style="margin-bottom: 4px; font-size: 0.95rem;"></li>
+                  </template>
+                </ul>
+              </div>
+            </template>
+          </div>
+        </template>
+
       </div>
     </template>
 
@@ -89,9 +162,17 @@
         loading: false,
         error: null,
 
+        modifyRequest: '',
+        modified: null,
+        modifying: false,
+        modifyError: null,
+
         async extractRecipe() {
           this.error = null;
           this.recipe = null;
+          this.modified = null;
+          this.modifyError = null;
+          this.modifyRequest = '';
           this.loading = true;
 
           try {
@@ -112,6 +193,35 @@
             this.error = 'Network error: could not reach the server.';
           } finally {
             this.loading = false;
+          }
+        },
+
+        async modifyRecipe() {
+          this.modifyError = null;
+          this.modified = null;
+          this.modifying = true;
+
+          try {
+            const response = await fetch('/modify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipe: this.recipe,
+                request: this.modifyRequest,
+              }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              this.modifyError = data.error || 'An unexpected error occurred.';
+            } else {
+              this.modified = data;
+            }
+          } catch (err) {
+            this.modifyError = 'Network error: could not reach the server.';
+          } finally {
+            this.modifying = false;
           }
         },
       };
