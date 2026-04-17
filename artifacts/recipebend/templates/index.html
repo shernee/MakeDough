@@ -5,6 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>RecipeBend</title>
   <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    .shortcut-btn {
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 3px;
+    }
+    .shortcut-btn:hover { background: #f0f0f0; }
+    .unit-btn {
+      padding: 4px 10px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      border: 1px solid #ccc;
+      background: #fff;
+      border-radius: 3px;
+    }
+    .unit-btn:hover { background: #f0f0f0; }
+  </style>
 </head>
 <body>
   <div x-data="recipeApp()" style="max-width: 800px; margin: 40px auto; padding: 0 20px; font-family: sans-serif;">
@@ -120,6 +140,51 @@
           </div>
         </template>
 
+        <!-- Shortcut controls -->
+        <div style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
+
+          <!-- Scaling row -->
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+            <span style="font-size: 0.8rem; color: #555; font-weight: 600; white-space: nowrap;">Scale:</span>
+            <template x-for="factor in scalePresets" :key="factor.label">
+              <button
+                type="button"
+                class="shortcut-btn"
+                @click="appendScale(factor.value)"
+                x-text="factor.label"
+              ></button>
+            </template>
+            <input
+              type="text"
+              x-model="customFactor"
+              placeholder="e.g. 1.5"
+              style="width: 62px; padding: 4px 6px; font-size: 0.85rem; border: 1px solid #ccc; border-radius: 3px;"
+            />
+            <button
+              type="button"
+              class="shortcut-btn"
+              @click="appendCustomScale"
+              :disabled="!customFactor.trim()"
+            >Apply</button>
+          </div>
+
+          <!-- Unit toggle -->
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <span style="font-size: 0.8rem; color: #555; font-weight: 600; white-space: nowrap;">Units:</span>
+            <button
+              type="button"
+              class="unit-btn"
+              @click="appendText('convert measurements to cups, tablespoons, and teaspoons')"
+            >cups/tbsp/tsp</button>
+            <button
+              type="button"
+              class="unit-btn"
+              @click="appendText('convert measurements to grams and ml')"
+            >grams/ml</button>
+          </div>
+
+        </div>
+
         <form @submit.prevent="modifyRecipe" style="margin-bottom: 16px;">
           <textarea
             x-model="modifyRequest"
@@ -192,7 +257,35 @@
         modified: null,
         modifying: false,
         modifyError: null,
-        modificationHistory: [],  // [{request, result}]
+        modificationHistory: [],
+
+        // Shortcut controls state
+        customFactor: '',
+        scalePresets: [
+          { label: '⅓x', value: '0.33' },
+          { label: '½x', value: '0.5' },
+          { label: '¾x', value: '0.75' },
+          { label: '2x',  value: '2' },
+          { label: '3x',  value: '3' },
+        ],
+
+        // Append text to the textarea (with a space separator if not empty)
+        appendText(text) {
+          const current = this.modifyRequest.trimEnd();
+          this.modifyRequest = current ? current + ', ' + text : text;
+        },
+
+        appendScale(factor) {
+          this.appendText(`scale to ${factor}x`);
+        },
+
+        appendCustomScale() {
+          const raw = this.customFactor.trim();
+          if (!raw) return;
+          // Accept decimals (1.5) or simple fractions (3/4) — pass as-is
+          this.appendText(`scale to ${raw}x`);
+          this.customFactor = '';
+        },
 
         async extractRecipe() {
           this.error = null;
@@ -228,12 +321,10 @@
           this.modifyError = null;
           this.modifying = true;
 
-          // Always use the latest modified recipe as the base, or the original if no modifications yet
           const currentRecipe = this.modified
             ? { ...this.recipe, ingredients: this.modified.ingredients, servings: this.modified.servings }
             : this.recipe;
 
-          // Send history as lightweight summaries for model context
           const history = this.modificationHistory.map(h => ({
             request: h.request,
             changes_summary: h.result.changes_summary,
@@ -255,7 +346,6 @@
             if (!response.ok) {
               this.modifyError = data.error || 'An unexpected error occurred.';
             } else {
-              // Push to history before updating modified
               this.modificationHistory.push({ request: this.modifyRequest, result: data });
               this.modified = data;
               this.modifyRequest = '';
