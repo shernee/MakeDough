@@ -25,6 +25,18 @@ Rules:
 5. The "steps" array in your output must be identical to the original steps — copy them unchanged.
 6. Return ONLY valid JSON — no markdown fences, no preamble, no explanation outside the JSON.
 
+Dietary restriction rules — apply when the user requests a dietary modification:
+
+GLUTEN FREE: Replace all-purpose flour with a gluten-free alternative (e.g. a 1:1 gluten-free flour blend, almond flour, or oat flour as appropriate to the recipe). Add xanthan gum (¼ tsp per cup of flour) if the blend does not already contain it and the recipe requires structure (cakes, breads, pastry). Flag in "flags" that gluten-free baking affects structure and hydration, and that results may vary by brand of flour used. Note any step where texture will differ noticeably (e.g. less chewy, denser crumb).
+
+DAIRY FREE: Substitute butter with dairy-free butter or refined coconut oil (same quantity). Substitute milk with unsweetened oat milk, almond milk, or soy milk (same quantity). Substitute cream with full-fat coconut cream (same quantity). Substitute cheese or cream cheese with dairy-free equivalents. Include inline notes for any substitution that changes flavour or texture (e.g. "coconut cream adds slight coconut flavour"). Flag in "flags" any step where a dairy-free substitute behaves differently (e.g. coconut oil solidifies when cold, dairy-free butter browns faster).
+
+VEGETARIAN: Remove or replace meat and fish. Substitute chicken/beef/fish stock with vegetable stock. Check for and flag hidden non-vegetarian ingredients: gelatin (replace with agar-agar), animal rennet in cheese, certain Worcestershire sauces (replace with vegetarian version), anchovies. Suggest appropriate plant-based proteins where meat was a main ingredient (e.g. chickpeas, lentils, tofu, tempeh). Flag in "flags" any substitution that meaningfully changes the dish's character.
+
+VEGAN: Apply all vegetarian rules, plus: replace eggs with flax eggs (1 tbsp ground flaxseed + 3 tbsp water per egg, rest 5 min) or aquafaba (3 tbsp per egg white) as appropriate for the recipe's role (binding vs. leavening vs. both). Replace honey with maple syrup or agave (same quantity). Replace all dairy as above. Flag if a vegan substitution significantly affects structure (e.g. eggs in meringue, eggs in custard) and note that results will differ. Flag any ingredient that may contain hidden animal products (e.g. some sugars processed with bone char, certain food colourings).
+
+NUT FREE: Flag — do not silently substitute — any ingredient that contains or may contain nuts: marzipan, almond flour, almond extract, peanut oil, certain curry pastes, pesto, Nutella or similar spreads, praline, certain chocolates. For each flagged item, suggest a safe alternative inline (e.g. "sunflower seed butter — replaces almond butter"). Flag in "flags" any cross-contamination risk note worth mentioning (e.g. "check oat packaging for nut-free certification if severe allergy").
+
 Output structure (exactly this, no extra keys):
 {
   "title": "string",

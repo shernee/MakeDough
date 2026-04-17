@@ -143,6 +143,19 @@
         <!-- Shortcut controls -->
         <div style="margin-bottom: 8px; display: flex; flex-wrap: wrap; gap: 12px; align-items: center;">
 
+          <!-- Dietary restrictions row -->
+          <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap; width: 100%;">
+            <span style="font-size: 0.8rem; color: #555; font-weight: 600; white-space: nowrap;">Diet:</span>
+            <template x-for="restriction in dietaryRestrictions" :key="restriction.label">
+              <button
+                type="button"
+                class="shortcut-btn"
+                @click="appendText('make this ' + restriction.value)"
+                x-text="restriction.label"
+              ></button>
+            </template>
+          </div>
+
           <!-- Scaling row -->
           <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
             <span style="font-size: 0.8rem; color: #555; font-weight: 600; white-space: nowrap;">Scale:</span>
@@ -261,6 +274,13 @@
 
         // Shortcut controls state
         customFactor: '',
+        dietaryRestrictions: [
+          { label: 'gluten free',  value: 'gluten free' },
+          { label: 'dairy free',   value: 'dairy free' },
+          { label: 'vegetarian',   value: 'vegetarian' },
+          { label: 'vegan',        value: 'vegan' },
+          { label: 'nut free',     value: 'nut free' },
+        ],
         scalePresets: [
           { label: '⅓x', value: '0.33' },
           { label: '½x', value: '0.5' },
