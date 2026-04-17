@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "Zrn08PTAMjYggUoEf0WUk"
+uri = "file://artifacts/makedough/README.md"
+type = "text"
+title = "README.md"
