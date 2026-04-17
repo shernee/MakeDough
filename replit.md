@@ -2,30 +2,35 @@
 
 ## Overview
 
-pnpm workspace monorepo using TypeScript, plus a Python/Flask web app (RecipeBend).
+pnpm workspace monorepo using TypeScript, plus a Python/Flask web app (Makedough).
 
-## RecipeBend (Python/Flask)
+## Makedough (Python/Flask)
 
-**Location:** `artifacts/recipebend/`
+**Location:** `artifacts/makedough/`
 
 **Stack:** Python 3.11, Flask, recipe-scrapers, requests, Alpine.js (CDN)
 
-**Run command:** `cd artifacts/recipebend && python app.py`
+**Run command:** `cd artifacts/makedough && python app.py`
 
 **Workflow:** "Start application" — serves on port 5000
 
 ### Routes
 - `GET /` — serves the HTML frontend
-- `POST /extract` — accepts `{ url }`, returns `{ title, servings, total_time, ingredients[], steps[], source_url }`
+- `POST /extract` — accepts `{ url }`, returns `{ title, servings, total_time, ingredients[], steps[], source_url, author, host }`
+- `POST /modify` — accepts `{ recipe, request, history }`, returns `{ ingredients[], changes_summary, flags[] }`
 
-### Phase 1 (complete)
+### Features (complete)
 - URL input + Extract button frontend (Alpine.js reactive)
 - `/extract` endpoint using `recipe_scrapers.scrape_html` with `wild_mode=True`
-- Graceful error handling with JSON error responses
+- Recipe modification via OpenRouter (`google/gemma-4-31b-it`) with iterative history chain
+- Side-by-side Original | Current ingredient columns
+- Shortcut chips: dietary restrictions, scale presets, volume/weight unit toggle
+- Attribution: author + host displayed below recipe title
 
-### Phase 2 (planned)
-- Recipe modification using Claude AI
-- Comment placeholder exists in `templates/index.html`
+### Notes
+- `OPENROUTER_API_KEY` stored in Replit secrets, never hardcoded
+- Port 5000; workflow command kills stale process before starting Flask
+- `recipe_scrapers.scrape_html(html, org_url=url, wild_mode=True)` — not `scrape_me`
 
 ## TypeScript Monorepo
 
