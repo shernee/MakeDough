@@ -1,6 +1,6 @@
 # Makedough
 
-Makedough is a web app that extracts recipes from any URL and lets you iteratively modify them using AI — adjusting ingredients for dietary needs, scaling servings, or swapping units — without rewriting the whole recipe by hand.
+Makedough is a web app that extracts recipes from any URL and lets you iteratively modify them using AI — adjusting ingredients for dietary needs, scaling servings, or swapping units — without hunting through unit converters and substitution guides.
 
 ## Features
 
