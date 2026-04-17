@@ -81,6 +81,8 @@ def extract():
         total_time = safe(scraper.total_time)
         ingredients = safe(scraper.ingredients) or []
         steps = safe(scraper.instructions_list) or []
+        author = safe(scraper.author)
+        host = safe(scraper.host)
 
         if not steps:
             raw = safe(scraper.instructions)
@@ -94,6 +96,8 @@ def extract():
             "ingredients": ingredients,
             "steps": steps,
             "source_url": url,
+            "author": author,
+            "host": host,
         })
 
     except Exception as e:

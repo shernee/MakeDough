@@ -64,9 +64,16 @@
           <strong>Total Time:</strong> <span x-text="recipe.total_time + ' minutes'"></span>
         </p>
 
-        <p>
-          <strong>Source:</strong>
-          <a :href="recipe.source_url" target="_blank" x-text="recipe.source_url"></a>
+        <p style="color: #555; font-size: 0.9rem;">
+          <template x-if="recipe.author && recipe.host">
+            <span>Recipe by <strong x-text="recipe.author"></strong> on <a :href="recipe.source_url" target="_blank" x-text="recipe.host"></a></span>
+          </template>
+          <template x-if="!recipe.author && recipe.host">
+            <span>From <a :href="recipe.source_url" target="_blank" x-text="recipe.host"></a></span>
+          </template>
+          <template x-if="!recipe.host">
+            <span>Source: <a :href="recipe.source_url" target="_blank" x-text="recipe.source_url"></a></span>
+          </template>
         </p>
 
         <!-- Ingredients: single column before any modification, two columns after -->
